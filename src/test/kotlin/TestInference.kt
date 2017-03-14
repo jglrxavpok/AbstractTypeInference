@@ -115,26 +115,17 @@ class TestInference {
             override fun toString(): String = "Integer"
         }
         val someFuncWithInt = Function("funcint", Variable("n") of Integers, OpaqueExpression("n!") of Reals)
-        inferer.infer(someFuncWithInt)
         val a = Variable("a")
         val b = Variable("b")
         val funcApplied = someFuncWithInt(b)
         val result = a+a - funcApplied
-        inferer.infer(funcApplied)
-        inferer.infer(result)
         val f = Function("f", Tuple(a, b), result)
+        inferer.infer(f) // TODO: Find out why the test does not pass without inferring the function type
         val someObjectA = object : Expression() {override val stringRepresentation: String = "A"}
         val someObjectB = object : Expression() {override val stringRepresentation: String = "B"}
         val complexExpression = f(Tuple(someObjectA, someObjectB))
         inferer.infer(complexExpression)
 
-        println(someFuncWithInt)
-        println(funcApplied)
-        println(result)
-        println(f)
-        println(complexExpression)
-        println(someObjectA)
-        println(someObjectB)
         assertTrue(someObjectA.type == Reals)
         assertTrue(someObjectB.type == Integers)
     }

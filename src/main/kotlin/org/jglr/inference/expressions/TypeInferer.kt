@@ -12,28 +12,44 @@ class TypeInferer {
                 infer(expr.left)
                 infer(expr.right)
                 val value = unify(expr.left.type, expr.right.type)
-                expr.left.type = value
-                expr.right.type = value
-                expr.type = value
+                updateType(expr, value)
             }
             is FunctionCall -> {
                 infer(expr.function)
                 val argumentType = unify(expr.argument.type, expr.function.argument.type)
-                expr.argument.type = argumentType
+                updateType(expr.argument, argumentType)
                 val result = expr.function.expression.type
-                expr.type = result
+                updateType(expr, result)
             }
             is Function -> {
                 infer(expr.argument)
                 infer(expr.expression)
-                expr.type = FunctionType(expr.argument.type, expr.expression.type)
+                updateType(expr, FunctionType(expr.argument.type, expr.expression.type))
             }
             is Tuple -> {
                 expr.arguments.forEach { this::infer }
                 val elementTypes = expr.arguments.map(Expression::type)
-                expr.type = TupleType(elementTypes.toTypedArray())
+                updateType(expr, TupleType(elementTypes.toTypedArray()))
             }
         }
+    }
+
+    private fun  updateType(expr: Expression, type: TypeDefinition) {
+        when(expr) {
+            is BinaryOperator -> {
+                updateType(expr.left, type)
+                updateType(expr.right, type)
+            }
+            is Tuple -> {
+                if(type !is PolyformicType) {
+                    if(type !is TupleType)
+                        throw ImpossibleUnificationExpression("Tuple cannot have a type that is neither Polyformic nor a tuple type")
+
+                    expr.arguments.forEachIndexed { index, expression -> updateType(expression, type.elementTypes[index]) }
+                }
+            }
+        }
+        expr.type = type
     }
 
     fun unify(vararg types: TypeDefinition): TypeDefinition {
