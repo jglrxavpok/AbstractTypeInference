@@ -27,3 +27,8 @@ Rules for comparing elementary types
 2. Let a and b be two primitives types, ```a <= b iif a = b```
 3. Let a and b be two function types, ```a <= b iif argument(a) <= argument(b) AND returnType(a) <= returnType(b)```
 4. Let a and b be two tuple types, ```a <= b iif a and b have the same length AND for any valid index 'i', a(i) <= b(i)```
+5. Anything else is considered impossible comparisons and therefore issues an IllegalArgumentException
+
+Discriminating types when inferring expressions
+===============================================
+Let 'T' a non-empty list of types. The 'unified' type is ```min(T)``` in respect of comparison rules from *Rules for comparing elementary types*.
