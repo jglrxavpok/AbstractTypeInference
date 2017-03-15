@@ -12,7 +12,7 @@ Format: ```Expression type: KotlinConstructor(args)```
 * Tuple expressions: ```Tuple(elements: Array<Expression>)```, must be used as an argument of a logically multi-argument function
 * Function expressions: ```Function(name, argument: Expression, body: Expression)```
 * Function calls: ```FunctionCall(function, argument)```
-* Literals: ```Literal(userObject: Any;, type: TypeDefinition)```, only expression to always have an explicit type
+* Literals: ```Literal(userObject: Any, type: TypeDefinition)```, only expression to always have an explicit type
 
 Elementary types
 ================
