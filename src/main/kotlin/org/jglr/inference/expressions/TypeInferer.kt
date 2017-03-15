@@ -1,5 +1,6 @@
 package org.jglr.inference.expressions
 
+import com.sun.org.apache.xpath.internal.compiler.FunctionTable
 import org.jglr.inference.types.FunctionType
 import org.jglr.inference.types.TupleType
 
@@ -7,7 +8,6 @@ class TypeInferer {
 
     fun infer(expr: Expression) {
         when(expr) {
-            // TODO: handle (a+a) type set to Real and a not changing type to a Real
             is BinaryOperator -> {
                 infer(expr.left)
                 infer(expr.right)
@@ -22,8 +22,8 @@ class TypeInferer {
                 updateType(expr, result)
             }
             is Function -> {
-                infer(expr.argument)
                 infer(expr.expression)
+                infer(expr.argument)
                 updateType(expr, FunctionType(expr.argument.type, expr.expression.type))
             }
             is Tuple -> {
@@ -34,7 +34,7 @@ class TypeInferer {
         }
     }
 
-    private fun  updateType(expr: Expression, type: TypeDefinition) {
+    private fun updateType(expr: Expression, type: TypeDefinition) {
         when(expr) {
             is BinaryOperator -> {
                 updateType(expr.left, type)
@@ -48,25 +48,38 @@ class TypeInferer {
                     expr.arguments.forEachIndexed { index, expression -> updateType(expression, type.elementTypes[index]) }
                 }
             }
+            is Function -> {
+                if(type !is PolyformicType) {
+                    if (type !is FunctionType)
+                        throw ImpossibleUnificationExpression("Functions cannot have a type that is neither Polyformic nor a function type")
+
+                    updateType(expr.argument, type.argumentType)
+                    updateType(expr.expression, type.returnType)
+                }
+            }
         }
-        expr.type = type
+        expr.type = unify(expr.type, type)
     }
 
     fun unify(vararg types: TypeDefinition): TypeDefinition {
-        var result: TypeDefinition = PolyformicType()
-        for(t in types) {
-            if(t !is PolyformicType) {
-                if(fits(t, result))
-                    result = t
-                else
-                    throw ImpossibleUnificationExpression("Cannot unify types $result and $t")
-            }
+        if(types.isEmpty())
+            throw IllegalArgumentException("Cannot unify array of 0 types")
+        try {
+            val min = types.min()
+            return min!!
+        } catch (e: IllegalArgumentException) {
+            throw ImpossibleUnificationExpression(e.message)
         }
-        return result
     }
 
-    private fun  fits(t: TypeDefinition, result: TypeDefinition): Boolean {
-        return result is PolyformicType || result == t || (t is TupleType && isFitTuple(t, result))
+    private fun fits(t: TypeDefinition, result: TypeDefinition): Boolean {
+        return result is PolyformicType || result == t || (t is TupleType && isFitTuple(t, result)) || (t is FunctionType && isFitFunction(t, result))
+    }
+
+    private fun isFitFunction(t: FunctionType, result: TypeDefinition): Boolean {
+        if(result !is FunctionType)
+            throw ImpossibleUnificationExpression()
+        return fits(t.argumentType, result.argumentType) && fits(t.returnType, result.returnType)
     }
 
     private fun isFitTuple(tupleType: TupleType, result: TypeDefinition): Boolean {
@@ -77,6 +90,6 @@ class TypeInferer {
     }
 }
 
-class ImpossibleUnificationExpression(message: String = "") : Exception(message) {
+class ImpossibleUnificationExpression(message: String? = "") : Exception(message) {
 
 }

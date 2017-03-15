@@ -48,7 +48,9 @@ class TestInference {
         }
         val result = (a / b) as BinaryOperator
         inferer.infer(result)
-        assertTrue(result.left.type == result.right.type && result.left.type == result.type && result.type == Integers)
+        assertEquals(result.left.type, result.right.type)
+        assertEquals(result.left.type, result.type)
+        assertEquals(result.type, Integers)
     }
 
     @Test
@@ -62,7 +64,8 @@ class TestInference {
         }
         val result = (a / b) as BinaryOperator
         inferer.infer(result)
-        assertTrue(result.left.type == result.right.type && result.left.type == result.type)
+        assertTrue(result.left.type == result.right.type)
+        assertTrue(result.left.type == result.type)
     }
 
     @Test
@@ -120,11 +123,15 @@ class TestInference {
         val funcApplied = someFuncWithInt(b)
         val result = a+a - funcApplied
         val f = Function("f", Tuple(a, b), result)
-        inferer.infer(f) // TODO: Find out why the test does not pass without inferring the function type
+
         val someObjectA = object : Expression() {override val stringRepresentation: String = "A"}
         val someObjectB = object : Expression() {override val stringRepresentation: String = "B"}
         val complexExpression = f(Tuple(someObjectA, someObjectB))
         inferer.infer(complexExpression)
+
+        println(f)
+
+        println(complexExpression)
 
         assertTrue(someObjectA.type == Reals)
         assertTrue(someObjectB.type == Integers)
