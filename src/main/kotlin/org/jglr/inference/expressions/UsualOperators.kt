@@ -1,6 +1,6 @@
 package org.jglr.inference.expressions
 
-open class BinaryOperator(val left: Expression, val right: Expression, val operator: String) : Function(operator, Tuple(left, right), OpaqueExpression("$left $operator $right")) {
+open class BinaryOperator(val left: Expression, val right: Expression, val operator: String) : Expression() {
     override val stringRepresentation: String
         get() = "$left $operator $right"
 }

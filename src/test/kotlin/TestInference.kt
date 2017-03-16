@@ -1,3 +1,5 @@
+import org.jglr.inference.ImpossibleUnificationExpression
+import org.jglr.inference.TypeInferer
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
 import org.jglr.inference.types.FunctionType
@@ -17,7 +19,7 @@ class TestInference {
         val inferer = TypeInferer()
         val result = a+b
         inferer.infer(result)
-        assertEquals(result.type, Integers)
+        assertEquals(Integers, result.type)
     }
 
     @Test(expected = ImpossibleUnificationExpression::class)
