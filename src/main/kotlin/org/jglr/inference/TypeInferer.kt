@@ -26,7 +26,13 @@ class TypeInferer {
             infer(it.function)
             val argumentType = unify(it.argument.type, it.function.argument.type)
             updateType(it.argument, argumentType)
+            val functionType = it.function.argument.type
+
+            // This exploits the fact that some functions can have a return type linked to their argument type (ie getting the head of a list of <type> should yield an element of <type>)
+            it.function.argument.type = argumentType
             val result = it.function.expression.type
+            it.function.argument.type = functionType
+            // End of exploit
             updateType(it, result)
         }
         // function calls have no special rules for updating their types

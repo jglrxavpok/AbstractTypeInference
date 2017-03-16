@@ -2,7 +2,7 @@ package org.jglr.inference.expressions
 
 open class BinaryOperator(val left: Expression, val right: Expression, val operator: String) : Expression() {
     override val stringRepresentation: String
-        get() = "$left $operator $right"
+        get() = "${left.stringRepresentation} $operator ${right.stringRepresentation}"
 }
 
 class Plus(left: Expression, right: Expression) : BinaryOperator(left, right, "+")

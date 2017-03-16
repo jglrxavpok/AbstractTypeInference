@@ -7,16 +7,15 @@ class FunctionType(val argumentType: TypeDefinition, val returnType: TypeDefinit
 
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
         if(other is FunctionType) {
-            if(argumentType <= other.argumentType && returnType <= other.returnType) {
-                if(argumentType == other.argumentType && returnType == other.returnType) {
+            if (argumentType <= other.argumentType && returnType <= other.returnType) {
+                if (argumentType == other.argumentType && returnType == other.returnType) {
                     return 0
                 }
                 return -1
-            } else {
+            } else if (!firstCall) {
                 throw IllegalArgumentException("Cannot compare $this and $other")
             }
-        } else {
-            return super.compare(other, firstCall)
         }
+        return super.compare(other, firstCall)
     }
 }
