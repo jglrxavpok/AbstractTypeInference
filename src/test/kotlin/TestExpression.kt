@@ -1,5 +1,6 @@
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
+import org.jglr.inference.types.TypeDefinition
 import org.junit.Test
 
 class TestExpression {

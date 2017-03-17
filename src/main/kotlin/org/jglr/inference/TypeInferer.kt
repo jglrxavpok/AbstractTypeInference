@@ -3,7 +3,9 @@ package org.jglr.inference
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
 import org.jglr.inference.types.FunctionType
+import org.jglr.inference.types.PolyformicType
 import org.jglr.inference.types.TupleType
+import org.jglr.inference.types.TypeDefinition
 
 class TypeInferer {
 

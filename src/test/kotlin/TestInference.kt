@@ -4,6 +4,7 @@ import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
 import org.jglr.inference.types.FunctionType
 import org.jglr.inference.types.TupleType
+import org.jglr.inference.types.TypeDefinition
 import org.junit.Test
 import org.junit.Assert.*
 

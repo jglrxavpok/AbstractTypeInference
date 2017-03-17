@@ -1,7 +1,10 @@
 import junit.framework.Assert.assertEquals
+import org.jglr.inference.ImpossibleUnificationExpression
 import org.jglr.inference.TypeInferer
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
+import org.jglr.inference.types.PolyformicType
+import org.jglr.inference.types.TypeDefinition
 import org.junit.Test
 
 class TestCustomType {
@@ -38,6 +41,34 @@ class TestCustomType {
         println(result)
 
         assertEquals(Integers, result.type)
+    }
+
+    @Test(expected = ImpossibleUnificationExpression::class)
+    fun invalidUseOfCustomType() {
+        // let's create a custom 'list-like' type
+        val Integers = object : TypeDefinition() { override fun toString(): String = "Integers" }
+
+        val inferer = TypeInferer()
+
+        // Function that get the head of a list
+        val variable = Variable("list") of ListType(PolyformicType())
+        val funcExpr = object : Expression() {
+            override val stringRepresentation: String
+                get() = "hd ${variable.stringRepresentation}"
+
+            override var type: TypeDefinition
+                get() = (variable.type as ListType).component
+                set(value) {}
+        }
+        println(funcExpr)
+        val headFunction = Function("hd", variable, funcExpr)
+
+        val someInteger = Variable("someInteger") of Integers
+
+        // and use it with an integer (must fail)
+        val result = headFunction(someInteger)
+
+        inferer.infer(result)
     }
 }
 
