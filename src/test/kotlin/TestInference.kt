@@ -139,4 +139,6 @@ class TestInference {
         assertTrue(someObjectA.type == Reals)
         assertTrue(someObjectB.type == Integers)
     }
+
+
 }

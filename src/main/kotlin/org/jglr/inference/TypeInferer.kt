@@ -2,10 +2,8 @@ package org.jglr.inference
 
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
-import org.jglr.inference.types.FunctionType
-import org.jglr.inference.types.PolymorphicType
-import org.jglr.inference.types.TupleType
-import org.jglr.inference.types.TypeDefinition
+import org.jglr.inference.types.*
+import org.jglr.inference.expressions.List as ListExpression
 
 class TypeInferer {
 
@@ -43,7 +41,7 @@ class TypeInferer {
         defineUpdatesOf { expr: Function, type ->
             if(type !is PolymorphicType) {
                 if (type !is FunctionType)
-                    throw ImpossibleUnificationExpression("Functions cannot have a type that is neither Polyformic nor a function type, found: $type")
+                    throw ImpossibleUnificationExpression("Functions cannot have a type that is neither Polymorphic nor a function type, found: $type")
 
                 updateType(expr.argument, type.argumentType)
                 updateType(expr.expression, type.returnType)
@@ -58,9 +56,25 @@ class TypeInferer {
         defineUpdatesOf { expr: Tuple, type ->
             if(type !is PolymorphicType) {
                 if(type !is TupleType)
-                    throw ImpossibleUnificationExpression("Tuple cannot have a type that is neither Polyformic nor a tuple type")
+                    throw ImpossibleUnificationExpression("Tuple cannot have a type that is neither Polymorphic nor a tuple type")
 
                 expr.arguments.forEachIndexed { index, expression -> updateType(expression, type.elementTypes[index]) }
+            }
+        }
+
+        defineProcessingOf<ListExpression> {
+            it.elements.forEach { infer(it) }
+            val types = it.elements.map(Expression::type).toTypedArray()
+            val elementType = unify(*types)
+            updateType(it, ListType(elementType))
+        }
+
+        defineUpdatesOf { list: ListExpression, type ->
+            if(type !is PolymorphicType) {
+                if(type !is ListType)
+                    throw ImpossibleUnificationExpression("Lists cannot have a type that is neither Polymorphic nor a list type")
+
+                list.elements.forEach { updateType(it, type.component) }
             }
         }
 
