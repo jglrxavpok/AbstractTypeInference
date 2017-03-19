@@ -2,7 +2,6 @@ package org.jglr.inference.expressions
 
 import org.jglr.inference.types.PolymorphicType
 import org.jglr.inference.types.TypeDefinition
-import java.util.*
 
 abstract class Expression {
     open var type: TypeDefinition = PolymorphicType()
@@ -23,6 +22,6 @@ class Literal(val representation: Any, typeDef: TypeDefinition) : Expression() {
     init {
         type = typeDef
     }
-    override val stringRepresentation: String = representation.toString()
 
+    override val stringRepresentation: String = representation.toString()
 }
