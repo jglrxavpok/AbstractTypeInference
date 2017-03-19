@@ -17,7 +17,7 @@ Format: ```Expression type: KotlinConstructor(args)```
 Elementary types
 ================
 * Basic (or primitive) types: ```TypeDefinition()```
-* Polymorphic types: ```PolyformicType()``` (**each** polyformic type has an UUID assigned on object creation)
+* Polymorphic types: ```PolymorphicType()``` (**each** polymorphic type has an UUID assigned on object creation)
 * Function types: ```FunctionType(argument: TypeDefinition, returnType: TypeDefinition)```
 * Tuple types: ```TupleType(elements: Array<TypeDefinition>)```
 

@@ -2,8 +2,8 @@ package org.jglr.inference.types
 
 import java.util.*
 
-class PolyformicType : TypeDefinition() {
-    val id = UUID.randomUUID()
+class PolymorphicType : TypeDefinition() {
+    val id: UUID = UUID.randomUUID()
 
     override fun toString(): String = "Poly($id)"
 

@@ -3,7 +3,7 @@ package org.jglr.inference
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
 import org.jglr.inference.types.FunctionType
-import org.jglr.inference.types.PolyformicType
+import org.jglr.inference.types.PolymorphicType
 import org.jglr.inference.types.TupleType
 import org.jglr.inference.types.TypeDefinition
 
@@ -41,7 +41,7 @@ class TypeInferer {
             updateType(it, FunctionType(it.argument.type, it.expression.type))
         }
         defineUpdatesOf { expr: Function, type ->
-            if(type !is PolyformicType) {
+            if(type !is PolymorphicType) {
                 if (type !is FunctionType)
                     throw ImpossibleUnificationExpression("Functions cannot have a type that is neither Polyformic nor a function type, found: $type")
 
@@ -56,7 +56,7 @@ class TypeInferer {
             updateType(it, TupleType(elementTypes.toTypedArray()))
         }
         defineUpdatesOf { expr: Tuple, type ->
-            if(type !is PolyformicType) {
+            if(type !is PolymorphicType) {
                 if(type !is TupleType)
                     throw ImpossibleUnificationExpression("Tuple cannot have a type that is neither Polyformic nor a tuple type")
 
@@ -75,14 +75,14 @@ class TypeInferer {
     }
 
     inline fun <reified T : Expression> defineProcessingOf(crossinline process: (T) -> Unit) {
-        addProcessor(object : TypeProcessor() {
+        addProcessor(object : TypeProcessor {
             override fun isHandled(type: Expression): Boolean = type is T
             override fun process(expr: Expression) = process(expr as T)
         })
     }
 
     inline fun <reified T : Expression> defineUpdatesOf(crossinline update: (T, TypeDefinition) -> Unit) {
-        addUpdater(object : TypeUpdater() {
+        addUpdater(object : TypeUpdater {
             override fun isHandled(type: Expression): Boolean = type is T
             override fun propagateUpdate(expr: Expression, type: TypeDefinition) = update(expr as T, type)
         })
@@ -110,16 +110,16 @@ class TypeInferer {
 
 }
 
-abstract class TypeUpdater {
-    abstract fun isHandled(type: Expression): Boolean
+interface TypeUpdater {
+    fun isHandled(type: Expression): Boolean
 
-    abstract fun propagateUpdate(expr: Expression, type: TypeDefinition): Unit
+    fun propagateUpdate(expr: Expression, type: TypeDefinition): Unit
 }
 
-abstract class TypeProcessor {
-    abstract fun isHandled(type: Expression): Boolean
+interface TypeProcessor {
+    fun isHandled(type: Expression): Boolean
 
-    abstract fun process(expr: Expression)
+    fun process(expr: Expression)
 }
 
 class ImpossibleUnificationExpression(message: String? = "") : Exception(message)

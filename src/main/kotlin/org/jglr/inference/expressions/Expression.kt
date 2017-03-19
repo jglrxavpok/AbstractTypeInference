@@ -1,11 +1,11 @@
 package org.jglr.inference.expressions
 
-import org.jglr.inference.types.PolyformicType
+import org.jglr.inference.types.PolymorphicType
 import org.jglr.inference.types.TypeDefinition
 import java.util.*
 
 abstract class Expression {
-    open var type: TypeDefinition = PolyformicType()
+    open var type: TypeDefinition = PolymorphicType()
     abstract val stringRepresentation: String
 
     override fun toString(): String = "($stringRepresentation : $type)"

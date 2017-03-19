@@ -2,7 +2,7 @@ import org.jglr.inference.ImpossibleUnificationExpression
 import org.jglr.inference.TypeInferer
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
-import org.jglr.inference.types.PolyformicType
+import org.jglr.inference.types.PolymorphicType
 import org.jglr.inference.types.TypeDefinition
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -18,7 +18,7 @@ class TestCustomType {
         val inferer = TypeInferer()
 
         // Function that get the head of a list
-        val variable = Variable("list") of ListType(PolyformicType())
+        val variable = Variable("list") of ListType(PolymorphicType())
         val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
         val headFunction = object : Function("hd", variable, funcExpr) {
             override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
@@ -46,7 +46,7 @@ class TestCustomType {
         val inferer = TypeInferer()
 
         // Function that get the head of a list
-        val variable = Variable("list") of ListType(PolyformicType())
+        val variable = Variable("list") of ListType(PolymorphicType())
         val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
         val headFunction = object : Function("hd", variable, funcExpr) {
             override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
@@ -75,7 +75,7 @@ class TestCustomType {
         val inferer = TypeInferer()
 
         // Function that get the head of a list
-        val variable = Variable("list") of ListType(PolyformicType())
+        val variable = Variable("list") of ListType(PolymorphicType())
         val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
         val headFunction = object : Function("hd", variable, funcExpr) {
             override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
