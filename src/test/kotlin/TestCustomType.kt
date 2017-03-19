@@ -1,10 +1,10 @@
-import junit.framework.Assert.assertEquals
 import org.jglr.inference.ImpossibleUnificationExpression
 import org.jglr.inference.TypeInferer
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
 import org.jglr.inference.types.PolyformicType
 import org.jglr.inference.types.TypeDefinition
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TestCustomType {
