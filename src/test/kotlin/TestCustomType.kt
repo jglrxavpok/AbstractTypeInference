@@ -121,4 +121,8 @@ private class ListType(val component: TypeDefinition) : TypeDefinition() {
         }
         return super.compare(other, firstCall)
     }
+
+    override fun hashCode(): Int {
+        return component.hashCode()
+    }
 }

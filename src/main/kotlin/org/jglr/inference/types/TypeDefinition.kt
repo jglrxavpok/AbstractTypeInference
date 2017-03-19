@@ -27,4 +27,8 @@ open class TypeDefinition : Comparable<TypeDefinition> {
     }
 
     override operator fun compareTo(other: TypeDefinition): Int = compare(other, true)
+
+    override fun hashCode(): Int {
+        return toString().hashCode()
+    }
 }

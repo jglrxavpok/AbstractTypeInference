@@ -1,6 +1,7 @@
 package org.jglr.inference.types
 
 import org.jglr.inference.expressions.Expression
+import java.util.*
 
 class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
 
@@ -32,4 +33,10 @@ class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
     }
 
     override fun toString(): String = "("+elementTypes.map (TypeDefinition::toString).reduce { a, b -> "$a, $b"}+")"
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + Arrays.hashCode(elementTypes)
+        return result
+    }
 }

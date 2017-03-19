@@ -23,4 +23,10 @@ class FunctionType(val argumentType: TypeDefinition, val returnType: TypeDefinit
         }
         return super.compare(other, firstCall)
     }
+
+    override fun hashCode(): Int {
+        var result = argumentType.hashCode()
+        result = 31 * result + returnType.hashCode()
+        return result
+    }
 }
