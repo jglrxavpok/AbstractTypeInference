@@ -19,26 +19,21 @@ class TestCustomType {
 
         // Function that get the head of a list
         val variable = Variable("list") of ListType(PolyformicType())
-        val funcExpr = object : Expression() {
-            override val stringRepresentation: String
-                get() = "hd ${variable.stringRepresentation}"
+        val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
+        val headFunction = object : Function("hd", variable, funcExpr) {
+            override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
+                return (argType as ListType).component
+            }
 
-            override var type: TypeDefinition
-                get() = (variable.type as ListType).component
-                set(value) {}
+            override fun getAppliedArgumentType(returnType: TypeDefinition): TypeDefinition {
+                return ListType(returnType)
+            }
         }
-        println(funcExpr)
-        val headFunction = Function("hd", variable, funcExpr)
 
         val mylist = Variable("mylist") of IntegerList
         val result = headFunction(mylist)
 
         inferer.infer(result)
-        println(headFunction)
-        println(">> "+inferer.unify(mylist.type, variable.type))
-        println(variable)
-        println(mylist)
-        println(result)
 
         assertEquals(Integers, result.type)
     }
@@ -52,16 +47,17 @@ class TestCustomType {
 
         // Function that get the head of a list
         val variable = Variable("list") of ListType(PolyformicType())
-        val funcExpr = object : Expression() {
-            override val stringRepresentation: String
-                get() = "hd ${variable.stringRepresentation}"
+        val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
+        val headFunction = object : Function("hd", variable, funcExpr) {
+            override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
+                return (argType as ListType).component
+            }
 
-            override var type: TypeDefinition
-                get() = (variable.type as ListType).component
-                set(value) {}
+            override fun getAppliedArgumentType(returnType: TypeDefinition): TypeDefinition {
+                return ListType(returnType)
+            }
         }
-        println(funcExpr)
-        val headFunction = Function("hd", variable, funcExpr)
+
 
         val someInteger = Variable("someInteger") of Integers
 
@@ -70,10 +66,50 @@ class TestCustomType {
 
         inferer.infer(result)
     }
+
+    @Test
+    fun inferCustomTypeWithOperations() {
+        // let's create a custom 'list-like' type
+        val Integers = object : TypeDefinition() { override fun toString(): String = "Integers" }
+        val ListIntegers = ListType(Integers)
+        val inferer = TypeInferer()
+
+        // Function that get the head of a list
+        val variable = Variable("list") of ListType(PolyformicType())
+        val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
+        val headFunction = object : Function("hd", variable, funcExpr) {
+            override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
+                return (argType as ListType).component
+            }
+
+            override fun getAppliedArgumentType(returnType: TypeDefinition): TypeDefinition {
+                return ListType(returnType)
+            }
+        }
+
+        val mylist = Variable("mylist")
+        val result = headFunction(mylist) + Literal(45, Integers)
+
+        inferer.infer(result)
+        println(result)
+        println(funcExpr)
+        println(variable)
+        println(mylist)
+        assertEquals(Integers, result.type)
+        assertEquals(ListIntegers, mylist.type)
+    }
+
 }
 
 private class ListType(val component: TypeDefinition) : TypeDefinition() {
     override fun toString(): String = "$component list"
+
+    override fun equals(other: Any?): Boolean {
+        if(other is ListType) {
+            return component == other.component
+        }
+        return super.equals(other)
+    }
 
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
         if(other is ListType) {

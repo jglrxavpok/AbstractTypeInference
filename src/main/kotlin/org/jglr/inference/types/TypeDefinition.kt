@@ -8,12 +8,14 @@ class PolyformicType : TypeDefinition() {
     override fun toString(): String = "Poly($id)"
 
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
+        if(other == this)
+            return 0
         return 1
     }
 }
 
 open class TypeDefinition : Comparable<TypeDefinition> {
-    fun equals(other: TypeDefinition): Boolean = other == this
+    override fun equals(other: Any?): Boolean = other === this
 
     open fun compare(other: TypeDefinition, firstCall: Boolean): Int {
         if(equals(other))

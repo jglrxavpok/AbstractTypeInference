@@ -28,16 +28,12 @@ class TypeInferer {
             infer(it.function)
             val argumentType = unify(it.argument.type, it.function.argument.type)
             updateType(it.argument, argumentType)
-            val functionType = it.function.argument.type
-
-            // This exploits the fact that some functions can have a return type linked to their argument type (ie getting the head of a list of <type> should yield an element of <type>)
-            it.function.argument.type = argumentType
-            val result = it.function.expression.type
-            it.function.argument.type = functionType
-            // End of exploit
+            val result = it.function.getAppliedReturnType(argumentType)
             updateType(it, result)
         }
-        // function calls have no special rules for updating their types
+        defineUpdatesOf { call: FunctionCall, type ->
+            updateType(call.argument, call.function.getAppliedArgumentType(type))
+        }
 
         defineProcessingOf<Function> {
             infer(it.expression)
@@ -55,7 +51,7 @@ class TypeInferer {
         }
 
         defineProcessingOf<Tuple> {
-            it.arguments.forEach { this::infer }
+            it.arguments.forEach { infer(it) }
             val elementTypes = it.arguments.map(Expression::type)
             updateType(it, TupleType(elementTypes.toTypedArray()))
         }
@@ -67,6 +63,7 @@ class TypeInferer {
                 expr.arguments.forEachIndexed { index, expression -> updateType(expression, type.elementTypes[index]) }
             }
         }
+
     }
 
     fun addProcessor(processor: TypeProcessor) {

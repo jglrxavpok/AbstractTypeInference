@@ -21,5 +21,15 @@ class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if(other is TupleType) {
+            if(elementTypes.size != other.elementTypes.size) {
+                return false
+            }
+            return (0..elementTypes.size).none { elementTypes[it] != other.elementTypes[it] }
+        }
+        return super.equals(other)
+    }
+
     override fun toString(): String = "("+elementTypes.map (TypeDefinition::toString).reduce { a, b -> "$a, $b"}+")"
 }
