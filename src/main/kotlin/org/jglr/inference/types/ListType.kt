@@ -13,6 +13,8 @@ class ListType(val component: TypeDefinition) : TypeDefinition() {
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
         if(other is ListType) {
             if(component <= other.component) {
+                if(component == other.component)
+                    return 0
                 return -1
             }
             if(!firstCall)

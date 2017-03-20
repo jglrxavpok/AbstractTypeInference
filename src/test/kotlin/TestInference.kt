@@ -2,11 +2,10 @@ import org.jglr.inference.ImpossibleUnificationExpression
 import org.jglr.inference.TypeInferer
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
-import org.jglr.inference.types.FunctionType
-import org.jglr.inference.types.TupleType
-import org.jglr.inference.types.TypeDefinition
+import org.jglr.inference.types.*
 import org.junit.Test
 import org.junit.Assert.*
+import org.jglr.inference.expressions.List as ListExpression
 
 class TestInference {
 
@@ -140,5 +139,49 @@ class TestInference {
         assertTrue(someObjectB.type == Integers)
     }
 
+    @Test
+    fun inferListType() {
+        val Integers = object : TypeDefinition() {
+            override fun toString(): String = "Integer"
+        }
+        val inferer = TypeInferer()
+        val x = Variable("x")
+        val elements = listOf(Literal(15, Integers), x)
+        val mylist = ListExpression(elements)
+
+        inferer.infer(mylist)
+
+        assertEquals(Integers, x.type)
+    }
+
+    @Test
+    fun inferListElementFromExpression() {
+        val Integers = object : TypeDefinition() {
+            override fun toString(): String = "Integer"
+        }
+
+        val variable = Variable("list") of ListType(PolymorphicType())
+        val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
+        val headFunction = object : Function("hd", variable, funcExpr) {
+            override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
+                return (argType as ListType).component
+            }
+
+            override fun getAppliedArgumentType(returnType: TypeDefinition): TypeDefinition {
+                return ListType(returnType)
+            }
+        }
+
+        val inferer = TypeInferer()
+        val x = Variable("x")
+        val y = Variable("y")
+        val result = headFunction(ListExpression(listOf(x, y))) + Literal(1, Integers)
+        println(result)
+        inferer.infer(result)
+        println(result)
+
+        assertEquals(Integers, x.type)
+        assertEquals(Integers, y.type)
+    }
 
 }
