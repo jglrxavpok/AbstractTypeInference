@@ -1,7 +1,7 @@
 package org.jglr.inference.types
 
 import org.jglr.inference.expressions.Expression
-import org.jglr.inference.expressions.TypeDefinition
+import java.util.*
 
 class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
 
@@ -22,5 +22,21 @@ class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if(other is TupleType) {
+            if(elementTypes.size != other.elementTypes.size) {
+                return false
+            }
+            return (0..elementTypes.size).none { elementTypes[it] != other.elementTypes[it] }
+        }
+        return super.equals(other)
+    }
+
     override fun toString(): String = "("+elementTypes.map (TypeDefinition::toString).reduce { a, b -> "$a, $b"}+")"
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + Arrays.hashCode(elementTypes)
+        return result
+    }
 }

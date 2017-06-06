@@ -2,8 +2,8 @@ package org.jglr.inference
 
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
-import org.jglr.inference.types.FunctionType
-import org.jglr.inference.types.TupleType
+import org.jglr.inference.types.*
+import org.jglr.inference.expressions.List as ListExpression
 
 class TypeInferer {
 
@@ -26,16 +26,12 @@ class TypeInferer {
             infer(it.function)
             val argumentType = unify(it.argument.type, it.function.argument.type)
             updateType(it.argument, argumentType)
-            val functionType = it.function.argument.type
-
-            // This exploits the fact that some functions can have a return type linked to their argument type (ie getting the head of a list of <type> should yield an element of <type>)
-            it.function.argument.type = argumentType
-            val result = it.function.expression.type
-            it.function.argument.type = functionType
-            // End of exploit
+            val result = it.function.getAppliedReturnType(argumentType)
             updateType(it, result)
         }
-        // function calls have no special rules for updating their types
+        defineUpdatesOf { call: FunctionCall, type ->
+            updateType(call.argument, call.function.getAppliedArgumentType(type))
+        }
 
         defineProcessingOf<Function> {
             infer(it.expression)
@@ -43,9 +39,9 @@ class TypeInferer {
             updateType(it, FunctionType(it.argument.type, it.expression.type))
         }
         defineUpdatesOf { expr: Function, type ->
-            if(type !is PolyformicType) {
+            if(type !is PolymorphicType) {
                 if (type !is FunctionType)
-                    throw ImpossibleUnificationExpression("Functions cannot have a type that is neither Polyformic nor a function type, found: $type")
+                    throw ImpossibleUnificationExpression("Functions cannot have a type that is neither Polymorphic nor a function type, found: $type")
 
                 updateType(expr.argument, type.argumentType)
                 updateType(expr.expression, type.returnType)
@@ -53,18 +49,35 @@ class TypeInferer {
         }
 
         defineProcessingOf<Tuple> {
-            it.arguments.forEach { this::infer }
+            it.arguments.forEach { infer(it) }
             val elementTypes = it.arguments.map(Expression::type)
             updateType(it, TupleType(elementTypes.toTypedArray()))
         }
         defineUpdatesOf { expr: Tuple, type ->
-            if(type !is PolyformicType) {
+            if(type !is PolymorphicType) {
                 if(type !is TupleType)
-                    throw ImpossibleUnificationExpression("Tuple cannot have a type that is neither Polyformic nor a tuple type")
+                    throw ImpossibleUnificationExpression("Tuple cannot have a type that is neither Polymorphic nor a tuple type")
 
                 expr.arguments.forEachIndexed { index, expression -> updateType(expression, type.elementTypes[index]) }
             }
         }
+
+        defineProcessingOf<ListExpression> {
+            it.elements.forEach { infer(it) }
+            val types = it.elements.map(Expression::type).toTypedArray()
+            val elementType = unify(*types)
+            updateType(it, ListType(elementType))
+        }
+
+        defineUpdatesOf { list: ListExpression, type ->
+            if(type !is PolymorphicType) {
+                if(type !is ListType)
+                    throw ImpossibleUnificationExpression("Lists cannot have a type that is neither Polymorphic nor a list type")
+
+                list.elements.forEach { updateType(it, type.component) }
+            }
+        }
+
     }
 
     fun addProcessor(processor: TypeProcessor) {
@@ -76,14 +89,14 @@ class TypeInferer {
     }
 
     inline fun <reified T : Expression> defineProcessingOf(crossinline process: (T) -> Unit) {
-        addProcessor(object : TypeProcessor() {
+        addProcessor(object : TypeProcessor {
             override fun isHandled(type: Expression): Boolean = type is T
             override fun process(expr: Expression) = process(expr as T)
         })
     }
 
     inline fun <reified T : Expression> defineUpdatesOf(crossinline update: (T, TypeDefinition) -> Unit) {
-        addUpdater(object : TypeUpdater() {
+        addUpdater(object : TypeUpdater {
             override fun isHandled(type: Expression): Boolean = type is T
             override fun propagateUpdate(expr: Expression, type: TypeDefinition) = update(expr as T, type)
         })
@@ -111,16 +124,16 @@ class TypeInferer {
 
 }
 
-abstract class TypeUpdater {
-    abstract fun isHandled(type: Expression): Boolean
+interface TypeUpdater {
+    fun isHandled(type: Expression): Boolean
 
-    abstract fun propagateUpdate(expr: Expression, type: TypeDefinition): Unit
+    fun propagateUpdate(expr: Expression, type: TypeDefinition): Unit
 }
 
-abstract class TypeProcessor {
-    abstract fun isHandled(type: Expression): Boolean
+interface TypeProcessor {
+    fun isHandled(type: Expression): Boolean
 
-    abstract fun process(expr: Expression)
+    fun process(expr: Expression)
 }
 
 class ImpossibleUnificationExpression(message: String? = "") : Exception(message)

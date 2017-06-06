@@ -13,13 +13,15 @@ Format: ```Expression type: KotlinConstructor(args)```
 * Function expressions: ```Function(name, argument: Expression, body: Expression)```
 * Function calls: ```FunctionCall(function, argument)```
 * Literals: ```Literal(userObject: Any, type: TypeDefinition)```, only expression to always have an explicit type
+* Lists: ```List(elements: List<Expression>)```, all elements are of the same type
 
 Elementary types
 ================
 * Basic (or primitive) types: ```TypeDefinition()```
-* Polymorphic types: ```PolyformicType()``` (**each** polyformic type has an UUID assigned on object creation)
+* Polymorphic types: ```PolymorphicType()``` (**each** polymorphic type has an UUID assigned on object creation)
 * Function types: ```FunctionType(argument: TypeDefinition, returnType: TypeDefinition)```
 * Tuple types: ```TupleType(elements: Array<TypeDefinition>)```
+* List types: ```ListType(component: TypeDefinition)```
 
 Rules for comparing elementary types
 ====================================
@@ -27,7 +29,8 @@ Rules for comparing elementary types
 2. Let a and b be two primitives types, ```a <= b iif a = b```
 3. Let a and b be two function types, ```a <= b iif argument(a) <= argument(b) AND returnType(a) <= returnType(b)```
 4. Let a and b be two tuple types, ```a <= b iif a and b have the same length AND for any valid index 'i', a(i) <= b(i)```
-5. Anything else is considered impossible comparisons and therefore issues an IllegalArgumentException
+5. Let a and b be two list types, ```a <= b iif component(a) <= component(b)```
+6. Anything else is considered impossible comparisons and therefore issues an IllegalArgumentException
 
 Discriminating types when inferring expressions
 ===============================================

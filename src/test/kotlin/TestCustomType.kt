@@ -1,7 +1,11 @@
-import junit.framework.Assert.assertEquals
+import org.jglr.inference.ImpossibleUnificationExpression
 import org.jglr.inference.TypeInferer
 import org.jglr.inference.expressions.*
 import org.jglr.inference.expressions.Function
+import org.jglr.inference.types.ListType
+import org.jglr.inference.types.PolymorphicType
+import org.jglr.inference.types.TypeDefinition
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TestCustomType {
@@ -15,43 +19,85 @@ class TestCustomType {
         val inferer = TypeInferer()
 
         // Function that get the head of a list
-        val variable = Variable("list") of ListType(PolyformicType())
-        val funcExpr = object : Expression() {
-            override val stringRepresentation: String
-                get() = "hd ${variable.stringRepresentation}"
+        val variable = Variable("list") of ListType(PolymorphicType())
+        val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
+        val headFunction = object : Function("hd", variable, funcExpr) {
+            override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
+                return (argType as ListType).component
+            }
 
-            override var type: TypeDefinition
-                get() = (variable.type as ListType).component
-                set(value) {}
+            override fun getAppliedArgumentType(returnType: TypeDefinition): TypeDefinition {
+                return ListType(returnType)
+            }
         }
-        println(funcExpr)
-        val headFunction = Function("hd", variable, funcExpr)
 
         val mylist = Variable("mylist") of IntegerList
         val result = headFunction(mylist)
 
         inferer.infer(result)
-        println(headFunction)
-        println(">> "+inferer.unify(mylist.type, variable.type))
-        println(variable)
-        println(mylist)
-        println(result)
 
         assertEquals(Integers, result.type)
     }
-}
 
-private class ListType(val component: TypeDefinition) : TypeDefinition() {
-    override fun toString(): String = "$component list"
+    @Test(expected = ImpossibleUnificationExpression::class)
+    fun invalidUseOfCustomType() {
+        // let's create a custom 'list-like' type
+        val Integers = object : TypeDefinition() { override fun toString(): String = "Integers" }
 
-    override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
-        if(other is ListType) {
-            if(component <= other.component) {
-                return -1
+        val inferer = TypeInferer()
+
+        // Function that get the head of a list
+        val variable = Variable("list") of ListType(PolymorphicType())
+        val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
+        val headFunction = object : Function("hd", variable, funcExpr) {
+            override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
+                return (argType as ListType).component
             }
-            if(!firstCall)
-                throw IllegalArgumentException("Cannot compare lists: $this and $other")
+
+            override fun getAppliedArgumentType(returnType: TypeDefinition): TypeDefinition {
+                return ListType(returnType)
+            }
         }
-        return super.compare(other, firstCall)
+
+
+        val someInteger = Variable("someInteger") of Integers
+
+        // and use it with an integer (must fail)
+        val result = headFunction(someInteger)
+
+        inferer.infer(result)
     }
+
+    @Test
+    fun inferCustomTypeWithOperations() {
+        // let's create a custom 'list-like' type
+        val Integers = object : TypeDefinition() { override fun toString(): String = "Integers" }
+        val ListIntegers = ListType(Integers)
+        val inferer = TypeInferer()
+
+        // Function that get the head of a list
+        val variable = Variable("list") of ListType(PolymorphicType())
+        val funcExpr = OpaqueExpression("hd ${variable.stringRepresentation}")
+        val headFunction = object : Function("hd", variable, funcExpr) {
+            override fun getAppliedReturnType(argType: TypeDefinition): TypeDefinition {
+                return (argType as ListType).component
+            }
+
+            override fun getAppliedArgumentType(returnType: TypeDefinition): TypeDefinition {
+                return ListType(returnType)
+            }
+        }
+
+        val mylist = Variable("mylist")
+        val result = headFunction(mylist) + Literal(45, Integers)
+
+        inferer.infer(result)
+        println(result)
+        println(funcExpr)
+        println(variable)
+        println(mylist)
+        assertEquals(Integers, result.type)
+        assertEquals(ListIntegers, mylist.type)
+    }
+
 }
