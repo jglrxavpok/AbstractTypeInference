@@ -27,7 +27,7 @@ class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
             if(elementTypes.size != other.elementTypes.size) {
                 return false
             }
-            return (0..elementTypes.size).none { elementTypes[it] != other.elementTypes[it] }
+            return (0 until elementTypes.size).none { elementTypes[it] != other.elementTypes[it] }
         }
         return super.equals(other)
     }
