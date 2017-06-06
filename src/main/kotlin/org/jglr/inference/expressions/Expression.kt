@@ -22,6 +22,8 @@ class PolyformicType : TypeDefinition() {
     override fun toString(): String = "Poly($id)"
 
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
+        if(this == other)
+            return 0
         return 1
     }
 }
