@@ -32,7 +32,7 @@ class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
         return super.equals(other)
     }
 
-    override fun toString(): String = "("+elementTypes.map (TypeDefinition::toString).reduce { a, b -> "$a, $b"}+")"
+    override fun toString(): String = if(elementTypes.isEmpty()) "()" else "("+elementTypes.map (TypeDefinition::toString).reduce { a, b -> "$a, $b"}+")"
 
     override fun hashCode(): Int {
         var result = super.hashCode()
