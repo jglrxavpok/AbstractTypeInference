@@ -4,13 +4,17 @@ class ListType(val component: TypeDefinition) : TypeDefinition() {
     override fun toString(): String = "$component list"
 
     override fun equals(other: Any?): Boolean {
+        if(super.equals(other))
+            return true
         if(other is ListType) {
             return component == other.component
         }
-        return super.equals(other)
+        return false
     }
 
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
+        if(other == this)
+            return 0
         if(other is ListType) {
             if(component <= other.component) {
                 if(component == other.component)

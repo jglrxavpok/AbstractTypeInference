@@ -6,6 +6,8 @@ import java.util.*
 class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
 
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
+        if(other == this)
+            return 0
         if(other is TupleType) {
             if(other.elementTypes.size != elementTypes.size)
                 throw IllegalArgumentException("Cannot compare tuples with different sizes: $this and $other")
@@ -23,13 +25,15 @@ class TupleType(val elementTypes: Array<TypeDefinition>) : TypeDefinition() {
     }
 
     override fun equals(other: Any?): Boolean {
+        if(super.equals(other))
+            return true
         if(other is TupleType) {
             if(elementTypes.size != other.elementTypes.size) {
                 return false
             }
             return (0 until elementTypes.size).none { elementTypes[it] != other.elementTypes[it] }
         }
-        return super.equals(other)
+        return false
     }
 
     override fun toString(): String = if(elementTypes.isEmpty()) "()" else "("+elementTypes.map (TypeDefinition::toString).reduce { a, b -> "$a, $b"}+")"

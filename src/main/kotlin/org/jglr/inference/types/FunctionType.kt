@@ -4,13 +4,17 @@ class FunctionType(val argumentType: TypeDefinition, val returnType: TypeDefinit
     override fun toString(): String = "$argumentType -> $returnType"
 
     override fun equals(other: Any?): Boolean {
+        if(super.equals(other))
+            return true
         if(other is FunctionType) {
             return other.argumentType == argumentType && other.returnType == returnType
         }
-        return super.equals(other)
+        return false
     }
 
     override fun compare(other: TypeDefinition, firstCall: Boolean): Int {
+        if(other == this)
+            return 0
         if(other is FunctionType) {
             if (argumentType <= other.argumentType && returnType <= other.returnType) {
                 if (argumentType == other.argumentType && returnType == other.returnType) {
